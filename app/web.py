@@ -1,6 +1,6 @@
 from flask import Blueprint, current_app, render_template, request
 
-from app.archive.save import recent
+from app.archive.save import origins, recent, retrieve
 from app.config import REVISION
 from app.errors import TrackError
 from app.inputs import sample
@@ -18,7 +18,16 @@ def screen(section='coverage'):
     if section not in SECTIONS:
         raise TrackError('NO_SAMPLE', 404)
     label = request.args.get('sample', 'dirty')
-    results = inspect(sample(label), section if section not in ('runs', 'issue') else 'coverage')
+    run_id = request.args.get('run', '')
+    snapshot = None
+    if section in ('runs', 'issue') and run_id:
+        snapshot = retrieve(current_app.track_archive, run_id)
+    if snapshot is not None:
+        results = snapshot['stages']
+    else:
+        results = inspect(sample(label), section if section not in ('runs', 'issue') else 'coverage')
     ledger = recent(current_app.track_archive)['runs'] if section in ('runs', 'issue') else []
+    originals = origins(current_app.track_archive, run_id)['origins'] if snapshot is not None else []
     return render_template('base.html', section=section, nav=SECTIONS, label=label, stages=results,
-                           ledger=ledger, rev=REVISION, run_id=request.args.get('run', ''))
+                           ledger=ledger, rev=REVISION, run_id=run_id, originals=originals,
+                           manifest=snapshot['manifest'] if snapshot is not None else None)

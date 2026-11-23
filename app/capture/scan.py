@@ -15,15 +15,17 @@ def scan(raw):
             repeated_headers += 1
             continue
         rows += 1
+        fields = {key: val.strip() for key, val in zip(header, record)} if len(record) == len(header) else None
         try:
             if not any(value.strip() for value in record):
                 raise ValueError('EMPTY_ROW')
-            if len(record) != len(header):
+            if fields is None:
                 raise ValueError('WIDTH')
-            events.append(event_from_row(line, {key: val.strip() for key, val in zip(header, record)}))
+            events.append(event_from_row(line, fields))
         except ValueError as exc:
             code = str(exc)
-            rejects.append({'line': line, 'reason': code, 'label': REASONS[code], 'raw': record})
+            rejects.append({'line': line, 'reason': code, 'label': REASONS[code], 'raw': record,
+                            'fields': fields})
     if not rows:
         raise TrackError('HEADER_ONLY')
     accepted, conflicts, duplicates = temporal_order(events)

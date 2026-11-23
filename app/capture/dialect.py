@@ -7,15 +7,17 @@ FIELDS = ('event_id', 'run', 'kind', 'at', 'odo_mm', 'ref', 'grade')
 MISSING = frozenset({'-', 'N/A', 'NULL', '未知'})
 
 
-def records(raw):
+def decode(raw):
     for codec in ('utf-8-sig', 'gb18030'):
         try:
-            text = raw.decode(codec)
-            break
+            return raw.decode(codec)
         except UnicodeError:
             continue
-    else:
-        raise TrackError('BAD_CSV')
+    raise TrackError('BAD_CSV')
+
+
+def records(raw):
+    text = decode(raw)
     if not text:
         raise TrackError('EMPTY_FILE')
     if not text.strip():

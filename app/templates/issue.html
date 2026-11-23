@@ -1,4 +1,12 @@
 <div class="work-grid"><section class="panel"><h3>巡检证据单</h3>
 {% if ledger %}<form id="issue-run"><label for="run">归档批次</label><select id="run">{% for item in ledger %}<option value="{{ item.run_id }}" {{ 'selected' if item.run_id == run_id }}>{{ item.run_id[:16] }} · {{ item.summary.mapped_mm }} mm</option>{% endfor %}</select><button>签发证据</button></form>
 <a id="download" hidden>下载签发证据</a><output id="seal"></output>{% else %}<p>请先完成一笔批次归档。</p>{% endif %}
+{% if run_id %}<p><a href="/api/runs/{{ run_id }}/export">核验并下载签发证据</a> · <a href="/work/issue?run={{ run_id }}">刷新</a></p>{% endif %}
 </section><section class="panel"><h3>随件证据</h3><ul><li>报文原件和隔离行</li><li>双基点、断链与掉线记录</li><li>轨段覆盖与缺陷群清单</li></ul></section></div>
+{% if originals %}<section class="panel"><h3>登记原件 · {{ originals|length }} 份</h3>
+<p>同一批次的复送件按字节各登记一份；证据行号以首份快照为准，下表给出每个原件中的对应行。</p>
+{% for item in originals %}<details><summary><code>{{ item.input_sha256[:16] }}</code> · {{ item.input_rows }} 行 · {{ item.received_at }}</summary>
+<p><a href="/api/runs/{{ run_id }}/origins/{{ item.input_sha256 }}">下载原件 CSV</a></p>
+<div class="scroll"><table><thead><tr><th>快照行</th><th>{{ item.input_sha256[:12] }} 行</th></tr></thead><tbody>
+{% for source_line, local_line in item.crosswalk.items() %}<tr><td>{{ source_line }}</td><td>{{ local_line }}</td></tr>{% endfor %}
+</tbody></table></div></details>{% endfor %}</section>{% endif %}

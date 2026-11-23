@@ -10,7 +10,8 @@ REASONS = {
     'NO_SAMPLE': '样例不存在', 'BAD_CSV': '报文文件无法解码或解析',
     'EMPTY_FILE': '文件没有内容', 'BLANK_FILE': '文件只有空白行', 'HEADER_ONLY': '文件只有表头',
     'BAD_HEADER': '报文字段与登记不一致', 'BAD_BODY': '提交参数无效',
-    'RUN_MISSING': '归档批次不存在', 'NOT_ISSUED': '批次尚未签发',
+    'RUN_MISSING': '归档批次不存在', 'ORIGIN_MISSING': '批次未登记该原件',
+    'NOT_ISSUED': '批次尚未签发',
 }
 
 

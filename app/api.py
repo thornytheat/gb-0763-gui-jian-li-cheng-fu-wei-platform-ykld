@@ -1,6 +1,6 @@
-from flask import Blueprint, current_app, jsonify
+from flask import Blueprint, Response, current_app, jsonify
 
-from app.archive.save import recent, replay, retrieve
+from app.archive.save import original, origins, recent, replay, retrieve
 from app.inputs import source
 from app.pipeline import inspect
 from app.seals.issue import issue, verified
@@ -51,6 +51,19 @@ def run():
 @api.get('/api/runs/<run_id>')
 def get_run(run_id):
     return retrieve(current_app.track_archive, run_id)
+
+
+@api.get('/api/runs/<run_id>/origins')
+def get_origins(run_id):
+    return origins(current_app.track_archive, run_id)
+
+
+@api.get('/api/runs/<run_id>/origins/<input_sha256>')
+def get_original(run_id, input_sha256):
+    raw = original(current_app.track_archive, run_id, input_sha256)
+    response = Response(raw, mimetype='text/csv')
+    response.headers['Content-Disposition'] = f'attachment; filename="track-{input_sha256[:16]}.csv"'
+    return response
 
 
 @api.post('/api/runs/<run_id>/issue')
